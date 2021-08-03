@@ -133,6 +133,68 @@ def main():
 
 if __name__ == "__main__": main()
 
+# Remnants:
+    # def allTickets():
+        # # max tickets per page
+        # max = 25
+
+        # # total tickets
+        # total = len(self.jsonData['tickets'])
+
+        # # remaining number of tickets to display
+        # remaining = total
+
+        # # current page
+        # page = 1
+
+        # # starting ticket
+        # start = 0
+
+        # # count returned
+        # count = 0
+
+        # # check if there are more than 25 tickets (for pagination)
+        # if remaining > max:
+        #     # to keep getting more pages as long as the user desires
+        #     while remaining > 0:
+        #         # display up to 25 tickets at a time. the ternary operator will check
+        #         # if the remaining tickets is greater than 25, and will set a max of 25
+        #         # if true, or simply send in the remaining tickets otherwise
+        #         count = self.displayTickets(start, max if remaining > max else remaining)
+
+        #         # update values after each call
+        #         remaining -= count
+        #         start += count
+                
+        #         # print the current page and total page count
+        #         print("Page " + str(page) + " of " + str(math.ceil(total / 25)))
+
+        #         if remaining > 0:
+        #             userInput = input("\nPress 1 to view the next page, anything else to return to the previous menu:\n")
+
+        #         if userInput != '1' or remaining == 0:
+        #             break
+        #         else:
+        #             page += 1
+                    
+        # else:
+        #     self.displayTickets(start, remaining)
+
+        # def singleTicket(self) -> None:
+        # # total tickets
+        # total = len(self.jsonData['tickets'])
+
+        # ticketNumber = int(input("Enter a ticket number:\n"))
+
+        # # WARNING: might need to verify that user input is a number before converting to int,
+        # # otherwise this may cause the program to crash
+
+        # # validate ticket number
+        # while ticketNumber >= total or ticketNumber < 0:
+        #     ticketNumber = int(input("Invalid ticket number\nEnter a ticket number:\n"))
+
+        # print(self.ticketFormat(ticketNumber))
+
 # Things to test for:
 # 1) Couldn't connect to the API
 # 2) No tickets were returned
