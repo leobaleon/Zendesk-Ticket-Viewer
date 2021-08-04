@@ -1,22 +1,21 @@
 from requests import get
 import os
-import math
 
 class TicketViewer:
     # class member variables
-    originalUrl = 'https://zccsonmac.zendesk.com/api/v2/tickets'
+    original_url = 'https://zccsonmac.zendesk.com/api/v2/tickets'
     username = ''
     password = ''
-    jsonData = ''
+    json_data = ''
 
     # constructor attempts to retrieve environment variables for username and 
-    # password for GET request from Zendesk API, also makes the call to getJSON()
-    # to initialize jsonData
+    # password for GET request from Zendesk API, also makes the call to get_json()
+    # to initialize json_data
     def __init__(self) -> None:
         try:
             # read username and password from environment variables
-            self.username = os.environ['USER']
-            self.password = os.environ['PASS']
+            self.username = os.environ['USERNAME']
+            self.password = os.environ['PASSWORD']
         except KeyError:
             print("Could not retrieve appropriate values for username and password...\n" + \
                 "Did you export the required environment variables correctly?")
@@ -24,9 +23,9 @@ class TicketViewer:
             print("Environment variables loaded successfully!")
 
     # this function will attempt a GET request and return the payload as JSON data.
-    # if the connection fails, this function will return -1 to set jsonData as a flag
+    # if the connection fails, this function will return -1 to set json_data as a flag
     # that indicaties this failure
-    def getJSON(self, url) -> str:
+    def get_json(self, url) -> str:
         try:
             # GET request with authorization info
             payload = get(url, auth=(self.username, self.password))
@@ -46,86 +45,86 @@ class TicketViewer:
     # will start the program by prompting the user to either view the menu or quit the program
     def solution(self) -> int:
         # if the GET request was unsuccessful, end the program
-        if self.jsonData == '-1':
-            return 0
+        if self.json_data == '-1':
+            return -1
 
         # prompt and get user input
-        userInput = input("Welcome to the ticket viewer\n" \
+        user_input = input("Welcome to the ticket viewer\n" \
                         "Type \'menu\' to view options or \'quit\' to exit\n")
         
         # validate user input?
-        while userInput != "menu" and userInput != "quit":
-            userInput = input("Invalid entry\n" \
+        while user_input != "menu" and user_input != "quit":
+            user_input = input("Invalid entry\n" \
                             "Type \'menu\' to view options or \'quit\' to exit\n")
 
-        if userInput == "menu":
-            self.menu(userInput)
+        if user_input == "menu":
+            self.menu(user_input)
 
         print("Thanks for using the viewer. Goodbye.")
         return 0
 
     # the main menu of the program, simply displays options for the user and then
     # navigates the program to the coresponding function
-    def menu(self, userInput) -> None:
+    def menu(self, user_input) -> None:
         # keep displaying the menu until the user decides to quit
-        while userInput != 'quit':
-            userInput = input("\n\tSelect view options:\n" \
+        while user_input != 'quit':
+            user_input = input("\n\tSelect view options:\n" \
                             "\t* Press 1 to view all tickets\n" \
                             "\t* Press 2 to view a ticket\n" \
                             "\t* Type \'quit\' to exit\n")
 
             # different menu options or error
-            if userInput == '1':
-                self.allTickets()
-            elif userInput == '2':
-                self.singleTicket()
-            elif userInput != 'quit':
+            if user_input == '1':
+                self.all_tickets()
+            elif user_input == '2':
+                self.single_ticket()
+            elif user_input != 'quit':
                 print("Invalid entry")
 
     # this function will display all of the tickets available to the user
     # 25 at a time. the user will be prompted to view the next page or stop early
-    def allTickets(self) -> None:
+    def all_tickets(self) -> None:
         # add the required string to get the correct page
-        pageURL = self.originalUrl + '.json?page[size]=25'
+        page_url = f'{self.original_url}.json?page[size]=25'
 
-        # update the jsonData variable with the new page data
-        self.jsonData = self.getJSON(pageURL)
+        # update the json_data variable with the new page data
+        self.json_data = self.get_json(page_url)
 
         # current page
         page = 1
 
         # total pages
-        total = len(self.jsonData) + 1
+        total = len(self.json_data) + 1
 
         # print every ticket on this page
-        for i in range(len(self.jsonData['tickets'])):
-            print(self.ticketFormat(i))
+        for i in range(len(self.json_data['tickets'])):
+            print(self.ticket_format(i))
 
         # print the current page and total page count
-        print("Page " + str(page) + " of " + str(total))
+        print(f'Page {str(page)} of {str(total)}')
 
         # while there are more pages with tickets
-        while self.jsonData['meta']['has_more']:
+        while self.json_data['meta']['has_more']:
             # get the url of the next page
-            pageURL = self.jsonData['links']['next']
+            page_url = self.json_data['links']['next']
 
-            # update the jsonData variable with the new page data
-            self.jsonData = self.getJSON(pageURL)
+            # update the json_data variable with the new page data
+            self.json_data = self.get_json(page_url)
 
             # print every ticket on this page
-            for i in range(len(self.jsonData['tickets'])):
-                print(self.ticketFormat(i))
+            for i in range(len(self.json_data['tickets'])):
+                print(self.ticket_format(i))
 
             # print the current page and total page count
-            print("Page " + str(page) + " of " + str(total))
+            print(f'Page {str(page)} of {str(total)}')
 
             # if there are more pages and we haven't reached the last page
-            if self.jsonData['meta']['has_more'] and page != total:
+            if self.json_data['meta']['has_more'] and page != total:
                 # check if the user wants to load the next page
-                userInput = input("\nPress 1 to view the next page, anything else to return to the previous menu:\n")
+                user_input = input("\nPress 1 to view the next page, anything else to return to the previous menu:\n")
 
             # end the loop if user is done or if we reached the last page
-            if userInput != '1' or page == total:
+            if user_input != '1' or page == total:
                 break
             # otherwise increment the page for next iteration
             else:
@@ -133,60 +132,43 @@ class TicketViewer:
 
     # this function allows the user to pick a single ticket to view. this function will
     # attempt to find the correct ticket and display only that one.
-    def singleTicket(self) -> None:        
+    def single_ticket(self) -> None:        
         # prompt the user for a number
-        ticketNumber = input("Enter a ticket number:\n")
+        ticket_number = input("Enter a ticket number:\n")
 
         # ensure that the user enters a number
-        while ticketNumber.isnumeric() == False:
-            ticketNumber = input("That is not a number\nEnter a ticket number:\n")
+        while ticket_number.isnumeric() == False:
+            ticket_number = input("That is not a number\nEnter a ticket number:\n")
 
         # use the user input to get the correct url for the GET request
-        ticketURL = self.originalUrl + '/' + str(ticketNumber) + '.json'
+        ticket_url = f'{self.original_url}/{str(ticket_number)}.json'
 
         # update the JSON data with the correct ticket
-        self.jsonData = self.getJSON(ticketURL)
+        self.json_data = self.get_json(ticket_url)
 
         # if the correct ticket was returned by the API
-        if self.jsonData != '-1':
-            print(self.ticketFormat(-1))
+        if self.json_data != '-1':
+            print(self.ticket_format(-1))
         # if unsuccessful, print an error message
         else:
             print("Reason: ticket does not exist!")
 
-    # this function handles the pagination of 25 tickets a time. it also keeps track
-    # of how many tickets have been displayed in the case where there are less than
-    # 25 tickets remaining. this helps allTickets() know when to stop making calls to
-    # this function to display more tickets
-    def displayTickets(self, start, num) -> int:
-        # to return the number of tickets displayed in this function call
-        count = 0
-
-        # for each ticket in the specifed number of tickets to display
-        for i in range(start, start+num):
-            print(self.ticketFormat(i))
-
-            # keep count
-            count += 1
-
-        return count
-
     # simple accessory function that combines the necessary information together for
     # printing each ticket
-    def ticketFormat(self, ticketNumber):
+    def ticket_format(self, ticket_number) -> None:
         # for the single ticket requests
-        if ticketNumber == -1:
+        if ticket_number == -1:
             return ("Ticket with subject \'" + \
-                self.jsonData['ticket']['subject'] + \
+                self.json_data['ticket']['subject'] + \
                 "\' opened by " + \
-                str(self.jsonData['ticket']['requester_id']) + \
+                str(self.json_data['ticket']['requester_id']) + \
                 " on " + \
-                self.jsonData['ticket']['created_at'])
+                self.json_data['ticket']['created_at'])
         # for page of tickets requests
         else:
             return ("Ticket with subject \'" + \
-                self.jsonData['tickets'][ticketNumber]['subject'] + \
+                self.json_data['tickets'][ticket_number]['subject'] + \
                 "\' opened by " + \
-                str(self.jsonData['tickets'][ticketNumber]['requester_id']) + \
+                str(self.json_data['tickets'][ticket_number]['requester_id']) + \
                 " on " + \
-                self.jsonData['tickets'][ticketNumber]['created_at'])
+                self.json_data['tickets'][ticket_number]['created_at'])
